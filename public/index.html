@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Reminder Bot Dashboard</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Font simile (Poppins) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #050b18;
+      --bg-card: #0a1224;
+      --accent: #1f8fff;
+      --accent-soft: #1f8fff33;
+      --text-main: #f5f7ff;
+      --text-muted: #8b93b7;
+      --warning: #ffc857;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #101634 0, #050b18 55%);
+      color: var(--text-main);
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .navbar {
+      background: linear-gradient(90deg, #050b18, #0d1933);
+      border-bottom: 1px solid #1b2440;
+    }
+
+    .navbar-brand {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .page-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .page-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #172345 0, #0a1224 55%);
+      border: 1px solid #1b2440;
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.6);
+      color: var(--text-main);
+    }
+
+    .card-header {
+      background: transparent;
+      border-bottom: 1px solid #1b2440;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    label.form-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .form-control, textarea.form-control {
+      background-color: #050b18;
+      border: 1px solid #262f4b;
+      color: var(--text-main);
+      font-size: 0.9rem;
+    }
+
+    .form-control::placeholder {
+      color: #4b5578;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 0.15rem var(--accent-soft);
+      background-color: #050b18;
+      color: var(--text-main);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1f8fff, #37b3ff);
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1a75d6, #2fa0e6);
+    }
+
+    .hint {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-dark mb-4 px-3">
+    <span class="navbar-brand d-flex align-items-center">
+      <span class="me-2">🧠</span> Reminder Bot Dashboard
+    </span>
+  </nav>
+
+  <div class="container">
+    <div class="mb-4">
+      <div class="page-title">1. Reminder</div>
+      <div class="page-subtitle">
+        Crea promemoria per il tuo server Discord e gestiscili da qui.
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Colonna sinistra: form nuovo reminder -->
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header">Nuovo reminder</div>
+          <div class="card-body">
+            <form action="/add" method="POST">
+              <div class="mb-3">
+                <label class="form-label">ID canale</label>
+                <input name="channel" class="form-control" placeholder="es. 123456789012345678" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Ora (HH:MM)</label>
+                <input name="time" class="form-control" placeholder="14:30" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Messaggio</label>
+                <textarea name="message" class="form-control" rows="3" placeholder="Testo del promemoria" required></textarea>
+              </div>
+
+              <button class="btn btn-primary w-100">Aggiungi</button>
+              <p class="hint mt-2">
+                I promemoria creati qui sono giornalieri. Per vedere la lista completa usa il comando
+                <code>/reminderlist</code> su Discord.
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonna destra: info / lista (per ora testo) -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header">Reminder esistenti</div>
+                <div class="card-body">
+                    <p id="reminders-loading" class="hint">Caricamento reminder...</p>
+                    <ul id="reminders-list" class="list-group list-group-flush"></ul>
+                </div>
+            </div>
+        </div>
+
+
+
+      </div>
+    </div>
+  </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    async function loadReminders() {
+        const loading = document.getElementById('reminders-loading');
+        const list = document.getElementById('reminders-list');
+
+        try {
+        const res = await fetch('/api/reminders');
+        const data = await res.json();
+
+        if (!data.length) {
+            loading.textContent = 'Nessun reminder salvato.';
+            return;
+        }
+
+        loading.remove();
+        list.innerHTML = data.map((r, i) => {
+            const v = r.value;
+            return `
+            <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between">
+                <div>
+                <div><strong>${i + 1}. ${v.time}</strong></div>
+                <small>Canale: ${v.channel}</small><br>
+                <small>Messaggio: ${v.message}</small>
+                </div>
+            </li>
+            `;
+        }).join('');
+        } catch (e) {
+        console.error(e);
+        loading.textContent = 'Errore nel caricare i reminder.';
+        }
+    }
+
+    loadReminders();
+    </script>
+</body>
+</html>
+  
+  
+  
+  
+</body>
+</html>
