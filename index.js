@@ -39,21 +39,6 @@ app.get('/dashboard', async (req, res) => {
 });
 
 
-app.post('/add', async (req, res) => {
-  const id = `reminder_${Date.now()}`;
-  await db.set(id, {
-    guildId: SERVER_ID,
-    channel: req.body.channel,
-    time: req.body.time,
-    repeat: 'everyday',
-    times: -1,
-    sent: 0,
-    message: req.body.message,
-  });
-  scheduleReminder(id);
-  res.redirect('/dashboard');
-});
-
 app.get('/api/reminders', async (req, res) => {
   try {
     const all = await db.all();
