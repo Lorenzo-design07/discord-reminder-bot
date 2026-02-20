@@ -4,10 +4,11 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const SERVER_ID = process.env.SERVER_ID;
 
 // DB
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_USER = process.env.DB_USER || 'root';
-const DB_PASS = process.env.DB_PASS || '';
-const DB_NAME = process.env.DB_NAME || 'reminder_bot';
+const DB_HOST = process.env.MYSQLHOST || process.env.DB_HOST;
+const DB_USER = process.env.MYSQLUSER || process.env.DB_USER;
+const DB_PASS = process.env.MYSQLPASSWORD || process.env.DB_PASS;
+const DB_NAME = process.env.MYSQLDATABASE || process.env.DB_NAME;
+
 
 // =========================
 
