@@ -262,6 +262,7 @@ client.on('interactionCreate', async (interaction) => {
     return;
   }
 });
+
 // ====== DEFINIZIONE COMANDI ======
 const commands = [
   new SlashCommandBuilder()
