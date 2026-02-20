@@ -62,6 +62,7 @@ app.get('/dashboard', async (req, res) => {
 
 app.get('/api/reminders', async (req, res) => {
   try {
+    console.log('Eseguo /reminderlist...');
     const reminders = await Reminder.find({});
     res.json(reminders);
   } catch (err) {
