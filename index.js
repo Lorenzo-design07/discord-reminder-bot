@@ -28,10 +28,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ====== MONGODB ======
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connesso'))
+  .catch(err => console.error('Errore MongoDB:', err));
 
 // Schema reminder
 const reminderSchema = new mongoose.Schema({
